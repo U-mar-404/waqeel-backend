@@ -27,7 +27,7 @@ def generate_answer_with_gpt(query, top_sections, model="gpt-4o"):
 
         "📝 Format the response using **Markdown**:\n\n"
 
-        "✅ **GPT Answer:**\n"
+        "ApnaWaqeel is here for help: **\n"
         "Start with an empathetic sentence about the situation.\n\n"
 
         "🔎 **Applicable Legal Sections (PPC/CrPC):**\n"
