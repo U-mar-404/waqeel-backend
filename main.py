@@ -1,5 +1,3 @@
-# main.py
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -9,10 +7,10 @@ from gpt_service import generate_answer_with_gpt
 
 app = FastAPI()
 
-# Allow frontend connections
+# CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],    # or replace with your frontend’s URL
+    allow_origins=["*"],  # Set your frontend URL here
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,21 +21,18 @@ class QueryRequest(BaseModel):
 
 @app.post("/query")
 def handle_query(req: QueryRequest):
-    query = req.query
     try:
+        query = req.query
         print("🔍 Received query:", query)
 
-        # Set file paths
-        GLOVE_PATH       = "data/Law2Vec.200d.txt"
-        PPC_EMB_PATH     = "data/ppc_section_embeddings2.json"
-        CRPC_EMB_PATH    = "data/crpc_embeddings.json"
-        PPC_DATA_PATH    = "data/ppc_data_final.json"
-        CRPC_DATA_PATH   = "data/CrPC.json"
+        # File paths
+        PPC_EMB_PATH = "data/ppc_section_embeddings2.json"
+        CRPC_EMB_PATH = "data/crpc_embeddings.json"
+        PPC_DATA_PATH = "data/ppc_data_final.json"
+        CRPC_DATA_PATH = "data/CrPC.json"
 
-        # Call search
         top_sections = search_query_multi(
             query=query,
-            glove_path=GLOVE_PATH,
             embedding_paths=[PPC_EMB_PATH, CRPC_EMB_PATH],
             section_data_paths=[PPC_DATA_PATH, CRPC_DATA_PATH],
             top_k=10
@@ -46,12 +41,9 @@ def handle_query(req: QueryRequest):
         if not top_sections:
             return {"answer": "No relevant sections found.", "sections": []}
 
-        # Generate response
         answer = generate_answer_with_gpt(query, top_sections)
         return {"answer": answer, "sections": top_sections}
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        print("❌ ERROR:", e)
         return {"error": str(e)}
-
