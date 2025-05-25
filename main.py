@@ -24,24 +24,34 @@ class QueryRequest(BaseModel):
 @app.post("/query")
 def handle_query(req: QueryRequest):
     query = req.query
+    try:
+        print("🔍 Received query:", query)
 
-    # ─── point the paths at your built embeddings + data files ─────────
-    GLOVE_PATH       = "data/Law2Vec.200d.txt"
-    PPC_EMB_PATH     = "data/ppc_section_embeddings2.json"
-    CRPC_EMB_PATH    = "data/crpc_embeddings.json"
-    PPC_DATA_PATH    = "data/ppc_data_final.json"
-    CRPC_DATA_PATH   = "data/CrPC.json"
+        # Set file paths
+        GLOVE_PATH       = "data/Law2Vec.200d.txt"
+        PPC_EMB_PATH     = "data/ppc_section_embeddings2.json"
+        CRPC_EMB_PATH    = "data/crpc_embeddings.json"
+        PPC_DATA_PATH    = "data/ppc_data_final.json"
+        CRPC_DATA_PATH   = "data/CrPC.json"
 
-    top_sections = search_query_multi(
-        query=query,
-        glove_path=GLOVE_PATH,
-        embedding_paths=[PPC_EMB_PATH, CRPC_EMB_PATH],
-        section_data_paths=[PPC_DATA_PATH, CRPC_DATA_PATH],
-        top_k=10
-    )
+        # Call search
+        top_sections = search_query_multi(
+            query=query,
+            glove_path=GLOVE_PATH,
+            embedding_paths=[PPC_EMB_PATH, CRPC_EMB_PATH],
+            section_data_paths=[PPC_DATA_PATH, CRPC_DATA_PATH],
+            top_k=10
+        )
 
-    if not top_sections:
-        return {"answer": "No relevant sections found.", "sections": []}
+        if not top_sections:
+            return {"answer": "No relevant sections found.", "sections": []}
 
-    answer = generate_answer_with_gpt(query, top_sections)
-    return {"answer": answer, "sections": top_sections}
+        # Generate response
+        answer = generate_answer_with_gpt(query, top_sections)
+        return {"answer": answer, "sections": top_sections}
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"error": str(e)}
+
